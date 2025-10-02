@@ -26,15 +26,47 @@
     },
     "/auth/register": {
       "post": {
-        "description": "Creates a new user account and returns a JWT access token",
+        "description": "Creates a new user account and returns a JWT access token. If organizationName is provided, a new organization will be created and the user will automatically be assigned ADMIN role.",
         "operationId": "AuthController_register",
         "parameters": [],
         "requestBody": {
           "required": true,
+          "description": "User registration data",
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RegisterRequestDto"
+              },
+              "examples": {
+                "example1": {
+                  "summary": "Register with existing organization",
+                  "description": "Register a new user with an existing organization ID",
+                  "value": {
+                    "email": "john.doe@example.com",
+                    "password": "SecurePassword123!",
+                    "name": "John Doe",
+                    "organizationId": "org_123456789"
+                  }
+                },
+                "example2": {
+                  "summary": "Register with new organization (becomes admin)",
+                  "description": "Register a new user and create a new organization. The user will automatically be assigned ADMIN role.",
+                  "value": {
+                    "email": "jane.smith@company.com",
+                    "password": "MySecurePassword456!",
+                    "name": "Jane Smith",
+                    "organizationName": "Tech Solutions Inc."
+                  }
+                },
+                "example3": {
+                  "summary": "Register without name (becomes admin)",
+                  "description": "Register a user without providing a name and create a new organization. The user will automatically be assigned ADMIN role.",
+                  "value": {
+                    "email": "admin@company.com",
+                    "password": "AdminPassword789!",
+                    "organizationName": "StartupXYZ"
+                  }
+                }
               }
             }
           }
@@ -106,10 +138,29 @@
         "parameters": [],
         "requestBody": {
           "required": true,
+          "description": "User login credentials",
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginRequestDto"
+              },
+              "examples": {
+                "example1": {
+                  "summary": "Standard user login",
+                  "description": "Login with email and password",
+                  "value": {
+                    "email": "john.doe@example.com",
+                    "password": "SecurePassword123!"
+                  }
+                },
+                "example2": {
+                  "summary": "Admin login",
+                  "description": "Login with email and password for admin user",
+                  "value": {
+                    "email": "admin@company.com",
+                    "password": "AdminPassword789!"
+                  }
+                }
               }
             }
           }
@@ -482,6 +533,293 @@
           "Contacts"
         ]
       }
+    },
+    "/organizations": {
+      "post": {
+        "description": "Creates a new organization in the system. If a creator user ID is provided, that user will automatically be assigned ADMIN role and associated with the organization.",
+        "operationId": "OrganizationsController_createOrganization",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Organization creation data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationRequestDto"
+              },
+              "examples": {
+                "example1": {
+                  "summary": "Basic organization",
+                  "description": "Create an organization with minimal information",
+                  "value": {
+                    "name": "Acme Corporation"
+                  }
+                },
+                "example2": {
+                  "summary": "Tech company",
+                  "description": "Create a technology company organization",
+                  "value": {
+                    "name": "Tech Solutions Inc."
+                  }
+                },
+                "example3": {
+                  "summary": "Startup organization",
+                  "description": "Create a startup organization",
+                  "value": {
+                    "name": "StartupXYZ"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Organization created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Organization ID"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Organization name"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Creation timestamp"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Last update timestamp"
+                    },
+                    "userCount": {
+                      "type": "number",
+                      "description": "Number of users in the organization"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid organization data provided"
+          },
+          "409": {
+            "description": "Organization with this name already exists"
+          }
+        },
+        "summary": "Create a new organization",
+        "tags": [
+          "Organizations"
+        ]
+      },
+      "get": {
+        "description": "Retrieves a list of all organizations in the system with their metadata.",
+        "operationId": "OrganizationsController_getAllOrganizations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Organizations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Organization ID"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Organization name"
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "Organization description",
+                        "nullable": true
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Creation timestamp"
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Last update timestamp"
+                      },
+                      "userCount": {
+                        "type": "number",
+                        "description": "Number of users in the organization"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get all organizations",
+        "tags": [
+          "Organizations"
+        ]
+      }
+    },
+    "/organizations/{id}": {
+      "get": {
+        "description": "Retrieves a specific organization by its ID with metadata.",
+        "operationId": "OrganizationsController_getOrganizationById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID",
+            "schema": {
+              "example": "org_123456789",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Organization ID"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Organization name"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Creation timestamp"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Last update timestamp"
+                    },
+                    "userCount": {
+                      "type": "number",
+                      "description": "Number of users in the organization"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "summary": "Get organization by ID",
+        "tags": [
+          "Organizations"
+        ]
+      },
+      "put": {
+        "description": "Updates an existing organization information.",
+        "operationId": "OrganizationsController_updateOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID",
+            "schema": {
+              "example": "org_123456789",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Organization update data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrganizationRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Organization updated successfully"
+          },
+          "404": {
+            "description": "Organization not found"
+          },
+          "409": {
+            "description": "Organization with this name already exists"
+          }
+        },
+        "summary": "Update organization",
+        "tags": [
+          "Organizations"
+        ]
+      },
+      "delete": {
+        "description": "Deletes an organization. The organization must not have any users.",
+        "operationId": "OrganizationsController_deleteOrganization",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID",
+            "schema": {
+              "example": "org_123456789",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Organization deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Organization not found"
+          },
+          "409": {
+            "description": "Cannot delete organization with existing users"
+          }
+        },
+        "summary": "Delete organization",
+        "tags": [
+          "Organizations"
+        ]
+      }
     }
   },
   "info": {
@@ -494,6 +832,10 @@
     {
       "name": "Authentication",
       "description": "User authentication, registration, and profile management"
+    },
+    {
+      "name": "Organizations",
+      "description": "Organization management and administration"
     },
     {
       "name": "Contacts",
@@ -518,6 +860,10 @@
   ],
   "servers": [
     {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    },
+    {
       "url": "https://api.taloncrm.com",
       "description": "Production server"
     }
@@ -525,9 +871,9 @@
   "components": {
     "securitySchemes": {
       "JWT-auth": {
-        "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT",
+        "type": "http",
         "description": "Enter JWT token"
       }
     },
@@ -571,6 +917,14 @@
         "properties": {}
       },
       "CreateContactDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateOrganizationRequestDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateOrganizationRequestDto": {
         "type": "object",
         "properties": {}
       }

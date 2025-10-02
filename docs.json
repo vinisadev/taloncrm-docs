@@ -66,6 +66,16 @@
             ]
           },
           {
+            "group": "Organizations",
+            "pages": [
+              "api-reference/organizations/create-a-new-organization",
+              "api-reference/organizations/get-all-organizations",
+              "api-reference/organizations/get-organization-by-id",
+              "api-reference/organizations/update-organization",
+              "api-reference/organizations/delete-organization"
+            ]
+          },
+          {
             "group": "Contacts",
             "pages": [
               "api-reference/contacts/get-all-contacts",
@@ -121,15 +131,15 @@
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {
